@@ -1,0 +1,80 @@
+# Continuous integration: one job per folder, each runs only when its own paths change.
+# Nothing here needs a GPU, network access to NASA/VSO, model weights or secrets (see docs/CI.md).
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# A new push to the same ref cancels the run still in progress for it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Decide which folders changed, so a docs-only change does not run every job.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      contracts: ${{ steps.filter.outputs.contracts }}
+      pipeline: ${{ steps.filter.outputs.pipeline }}
+      vlm: ${{ steps.filter.outputs.vlm }}
+      agent: ${{ steps.filter.outputs.agent }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            contracts:
+              - 'contracts/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+            pipeline:
+              - 'pipeline/**'
+              - 'contracts/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+            vlm:
+              - 'vlm/**'
+              - 'contracts/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+            agent:
+              - 'agent/**'
+              - 'contracts/**'
+              - 'pyproject.toml'
+              - '.github/workflows/ci.yml'
+
+  contracts:
+    needs: changes
+    if: needs.changes.outputs.contracts == 'true'
+    uses: ./.github/workflows/folder-check.yml
+    with:
+      folder: contracts
+
+  pipeline:
+    needs: changes
+    if: needs.changes.outputs.pipeline == 'true'
+    uses: ./.github/workflows/folder-check.yml
+    with:
+      folder: pipeline
+
+  vlm:
+    needs: changes
+    if: needs.changes.outputs.vlm == 'true'
+    uses: ./.github/workflows/folder-check.yml
+    with:
+      folder: vlm
+
+  agent:
+    needs: changes
+    if: needs.changes.outputs.agent == 'true'
+    uses: ./.github/workflows/folder-check.yml
+    with:
+      folder: agent

@@ -1,0 +1,17 @@
+# Shared tooling configuration for the whole monorepo.
+#
+# Each folder is a set of scripts and modules, not an installable package yet, so this file only
+# configures ruff and pytest; there is no [project] or build table on purpose (the package layout
+# waits until the prototype is validated).
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["data", "output", "models"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "RUF"]
+
+[tool.pytest.ini_options]
+testpaths = ["contracts/tests", "pipeline/tests", "vlm/tests", "agent/tests"]
+addopts = "-p no:cacheprovider"
