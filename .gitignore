@@ -1,0 +1,27 @@
+# Data and outputs never go to git (the dataset lives on HuggingFace, see docs/decisions.md)
+data/
+output/
+images/
+*.fits
+*.fits.gz
+
+# Model weights and caches
+models/
+*.pt
+*.pth
+*.safetensors
+*.bin
+
+# Secrets
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.ruff_cache/
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
